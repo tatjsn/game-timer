@@ -5,7 +5,7 @@ import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import { Provider } from 'react-redux';
 import reducers from './reducers';
-import { timeDecrease, timeInitalize, gameBegin, gameEnd } from './actions';
+import { timeDecrease, timeInitalize, gameBegin, gameEnd, timeoutBegin, timeoutEnd } from './actions';
 import Time from './components/Time';
 import Input from './components/Input';
 import ControlPanel from './components/ControlPanel';
@@ -17,15 +17,31 @@ const createStoreWithMiddleware = applyMiddleware(
 )(createStore);
 const store = createStoreWithMiddleware(reducers);
 
-setInterval(() => {
-  const state = store.getState();
-  if (state.inGame && !state.inTimeout) {
-    store.dispatch(timeDecrease(1))
-  }
-  if (state.time === 1) {
+let inGame, inTimeout, time, intervalId;
+store.subscribe(() => {
+  let prevInGame = inGame;
+  let prevInTimeout = inTimeout;
+  let prevTime = time;
+  inGame = store.getState().inGame;
+  inTimeout = store.getState().inTimeout;
+  time = store.getState().time;
+  if (time !== prevTime && time === 0 && inGame && !inTimeout) {
+    clearInterval(intervalId);
     store.dispatch(gameEnd());
+    return;
   }
-}, 1000);
+
+  if (inGame !== prevInGame || inTimeout !== prevInTimeout) {
+    if (inGame && !inTimeout && intervalId === undefined) {
+      intervalId = setInterval(() => {
+        store.dispatch(timeDecrease(1))
+      }, 1000);
+    } else if (intervalId !== undefined) {
+      clearInterval(intervalId);
+      intervalId = undefined;
+    }
+  }
+});
 
 const InputC = connect(({ inGame }) => ({ inGame }))(Input);
 const TimeC = connect(({ time }) => ({ time }))(Time);
@@ -38,7 +54,7 @@ const App = () => (
       onBegin={event => store.dispatch(gameBegin(store.getState().gameTime))}
       onEnd={event => store.dispatch(gameEnd())}
       onPause={event => store.dispatch(timeoutBegin())}
-      onPause={event => store.dispatch(timeoutEnd())} />
+      onResume={event => store.dispatch(timeoutEnd())} />
   </div>
 );
 
