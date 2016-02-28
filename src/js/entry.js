@@ -17,18 +17,26 @@ const createStoreWithMiddleware = applyMiddleware(
 )(createStore);
 const store = createStoreWithMiddleware(reducers);
 
-let inGame, inTimeout, time, intervalId;
+let { inGame, inTimeout, time } = store.getState();
+let intervalId;
 store.subscribe(() => {
   let prevInGame = inGame;
   let prevInTimeout = inTimeout;
   let prevTime = time;
-  inGame = store.getState().inGame;
-  inTimeout = store.getState().inTimeout;
-  time = store.getState().time;
+  ({ inGame, inTimeout, time } = store.getState());
   if (time !== prevTime && time === 0 && inGame && !inTimeout) {
     clearInterval(intervalId);
     store.dispatch(gameEnd());
+    // sound once
     return;
+  }
+
+  if (inTimeout !== prevInTimeout) {
+    if (inTimeout) {
+      // sound on
+    } else {
+      // sound off
+    }
   }
 
   if (inGame !== prevInGame || inTimeout !== prevInTimeout) {
