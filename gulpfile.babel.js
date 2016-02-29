@@ -20,10 +20,14 @@ gulp.task('html', () =>
   gulp.src('src/html/*.html')
   .pipe(gulp.dest('dist')));
 
+gulp.task('aac', () =>
+  gulp.src('aac/*.aac')
+  .pipe(gulp.dest('dist')));
+
 gulp.task('js-watch', ['js'], browserSync.reload);
 gulp.task('html-watch', ['html'], browserSync.reload);
 
-gulp.task('dist', ['js', 'html']);
+gulp.task('dist', ['js', 'html', 'aac']);
 
 gulp.task('serve', ['dist'], () => {
   gulp.watch(['src/**/*.js', '!**/.*'], ['js-watch']);

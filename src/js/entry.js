@@ -17,6 +17,26 @@ const createStoreWithMiddleware = applyMiddleware(
 )(createStore);
 const store = createStoreWithMiddleware(reducers);
 
+window.AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+const decodeAudioData = context => data => new Promise((resolve, reject) => {
+  context.decodeAudioData(data, buffer => resolve(buffer), e => reject(e));
+});
+const decode = decodeAudioData(audioCtx);
+
+fetch('./ching.aac')
+  .then(res => res.arrayBuffer())
+  .then(data => decode(data))
+  .then(buffer => {
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioCtx.destination);
+    source.loop = true;
+    source.start(0);
+    setTimeout(() => {source.stop(0)}, 10 * 1000);
+  });
+
 let { inGame, inTimeout, time } = store.getState();
 let intervalId;
 store.subscribe(() => {
