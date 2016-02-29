@@ -12,7 +12,12 @@ gulp.task('js', () =>
     },
     output: {
       filename: 'bundle.js'
-    }
+    },
+    plugins: [
+      new webpack.webpack.ProvidePlugin({
+        fetch: 'imports?this=>global!exports?global.fetch!whatwg-fetch'
+      })
+    ]
   }))
   .pipe(gulp.dest('dist')));
 

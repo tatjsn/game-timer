@@ -23,18 +23,28 @@ const audioCtx = new AudioContext();
 const decodeAudioData = context => data => new Promise((resolve, reject) => {
   context.decodeAudioData(data, buffer => resolve(buffer), e => reject(e));
 });
-const decode = decodeAudioData(audioCtx);
+const createBufferSource = context => buffer => {
+  const source = context.createBufferSource();
+  source.buffer = buffer;
+  source.connect(context.destination);
+  source.loop = true;
+  return source;
+}
 
-fetch('./ching.aac')
+const decode = decodeAudioData(audioCtx);
+const createSource = createBufferSource(audioCtx);
+
+const fetchAac = url =>
+  fetch(url)
   .then(res => res.arrayBuffer())
-  .then(data => decode(data))
-  .then(buffer => {
-    const source = audioCtx.createBufferSource();
-    source.buffer = buffer;
-    source.connect(audioCtx.destination);
-    source.loop = true;
-    source.start(0);
-    setTimeout(() => {source.stop(0)}, 10 * 1000);
+  .then(data => decode(data));
+
+let radio, ching; // buffers
+let radioSource, chingSource;
+Promise.all(['./radio.aac', './ching.aac'].map(fetchAac))
+  .then(([radioBuffer, chingBuffer]) => {
+    radio = radioBuffer;
+    ching = chingBuffer;
   });
 
 let { inGame, inTimeout, time } = store.getState();
@@ -47,15 +57,24 @@ store.subscribe(() => {
   if (time !== prevTime && time === 0 && inGame && !inTimeout) {
     clearInterval(intervalId);
     store.dispatch(gameEnd());
-    // sound once
+    if (ching) {
+      chingSource = createSource(ching);
+      chingSource.start(0);
+      setTimeout(() => {
+        chingSource.stop(0);
+        chingSource = undefined;
+      }, 10 * 1000);
+    }
     return;
   }
 
-  if (inTimeout !== prevInTimeout) {
+  if (inTimeout !== prevInTimeout && radio) {
     if (inTimeout) {
-      // sound on
-    } else {
-      // sound off
+      radioSource = createSource(radio);
+      radioSource.start(0);
+    } else if (radioSource) {
+      radioSource.stop(0);
+      radioSource = undefined;
     }
   }
 
