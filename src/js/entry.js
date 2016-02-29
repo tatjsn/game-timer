@@ -51,23 +51,20 @@ store.subscribe(() => {
   }
 });
 
-const InputC = connect(({ inGame }) => ({ inGame }))(Input);
-const TimeC = connect(({ time }) => ({ time }))(Time);
-const ControlPanelC = connect(({ inGame, inTimeout }) => ({ inGame, inTimeout }))(ControlPanel);
-const App = () => (
-  <div>
-    <TimeC />
-    <InputC onChange={event => store.dispatch(timeInitalize(event.target.value))} />
-    <ControlPanelC
-      onBegin={event => store.dispatch(gameBegin(store.getState().gameTime))}
-      onEnd={event => store.dispatch(gameEnd())}
-      onPause={event => store.dispatch(timeoutBegin())}
-      onResume={event => store.dispatch(timeoutEnd())} />
-  </div>
-);
+const VisibleInput = connect(({ inGame }) => ({ inGame }))(Input);
+const VisibleTime = connect(({ time }) => ({ time }))(Time);
+const VisibleControlPanel = connect(({ inGame, inTimeout }) => ({ inGame, inTimeout }))(ControlPanel);
 
 render((
   <Provider store={store}>
-    <App />
+    <div>
+      <VisibleTime />
+      <VisibleInput onChange={event => store.dispatch(timeInitalize(event.target.value))} />
+      <VisibleControlPanel
+        onBegin={event => store.dispatch(gameBegin(store.getState().gameTime))}
+        onEnd={event => store.dispatch(gameEnd())}
+        onPause={event => store.dispatch(timeoutBegin())}
+        onResume={event => store.dispatch(timeoutEnd())} />
+    </div>
   </Provider>
 ), document.getElementById('app'))
