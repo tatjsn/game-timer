@@ -5,7 +5,8 @@ import {
   GAME_BEGIN,
   GAME_END,
   TIMEOUT_BEGIN,
-  TIMEOUT_END
+  TIMEOUT_END,
+  SOUNDS_READY
 } from './actions';
 
 const gameTime = (state = 0, { type, payload }) => {
@@ -50,9 +51,19 @@ const inTimeout = (state = false, { type }) =>  {
   }
 }
 
+const isReady = (state = false, { type }) =>  {
+  switch (type) {
+    case SOUNDS_READY:
+      return true;
+    default:
+      return state;
+  }
+}
+
 export default combineReducers({
   gameTime,
   time,
   inGame,
-  inTimeout
+  inTimeout,
+  isReady
 });

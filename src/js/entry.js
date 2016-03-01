@@ -5,11 +5,10 @@ import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import { Provider } from 'react-redux';
 import reducers from './reducers';
-import { timeDecrease, timeInitalize, gameBegin, gameEnd, timeoutBegin, timeoutEnd } from './actions';
+import { timeDecrease, timeInitalize, gameBegin, gameEnd, timeoutBegin, timeoutEnd, soundsReady } from './actions';
 import Time from './components/Time';
 import Input from './components/Input';
 import ControlPanel from './components/ControlPanel';
-// temporary: doesn't belong here
 import { connect } from 'react-redux';
 
 const createStoreWithMiddleware = applyMiddleware(
@@ -45,7 +44,19 @@ Promise.all(['./radio.aac', './ching.aac'].map(fetchAac))
   .then(([radioBuffer, chingBuffer]) => {
     radio = radioBuffer;
     ching = chingBuffer;
+    store.dispatch(soundsReady());
   });
+
+const playChing = duration => {
+  if (ching) {
+    chingSource = createSource(ching);
+    chingSource.start(0);
+    setTimeout(() => {
+      chingSource.stop(0);
+      chingSource = undefined;
+    }, duration);
+  }
+}
 
 let { inGame, inTimeout, time } = store.getState();
 let intervalId;
@@ -57,14 +68,7 @@ store.subscribe(() => {
   if (time !== prevTime && time === 0 && inGame && !inTimeout) {
     clearInterval(intervalId);
     store.dispatch(gameEnd());
-    if (ching) {
-      chingSource = createSource(ching);
-      chingSource.start(0);
-      setTimeout(() => {
-        chingSource.stop(0);
-        chingSource = undefined;
-      }, 10 * 1000);
-    }
+    playChing(10 * 1000);
     return;
   }
 
@@ -80,6 +84,7 @@ store.subscribe(() => {
 
   if (inGame !== prevInGame || inTimeout !== prevInTimeout) {
     if (inGame && !inTimeout && intervalId === undefined) {
+      playChing(2 * 1000);
       intervalId = setInterval(() => {
         store.dispatch(timeDecrease(1))
       }, 1000);
@@ -92,7 +97,7 @@ store.subscribe(() => {
 
 const VisibleInput = connect(({ inGame }) => ({ inGame }))(Input);
 const VisibleTime = connect(({ time }) => ({ time }))(Time);
-const VisibleControlPanel = connect(({ inGame, inTimeout }) => ({ inGame, inTimeout }))(ControlPanel);
+const VisibleControlPanel = connect(({ inGame, inTimeout, isReady }) => ({ inGame, inTimeout, isReady }))(ControlPanel);
 
 render((
   <Provider store={store}>
