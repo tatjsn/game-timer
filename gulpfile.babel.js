@@ -2,6 +2,20 @@ import gulp from 'gulp';
 import webpack from 'webpack-stream';
 import browserSync from 'browser-sync';
 
+const plugins = [
+  new webpack.webpack.ProvidePlugin({
+    fetch: 'imports?this=>global!exports?global.fetch!whatwg-fetch'
+  })
+];
+
+if (process.env.NODE_ENV === 'production') {
+  plugins.push(new webpack.webpack.optimize.UglifyJsPlugin({
+    compress: {
+      warnings: false
+    }
+  }));
+}
+
 gulp.task('js', () =>
   gulp.src('src/js/entry.js')
   .pipe(webpack({
@@ -13,11 +27,7 @@ gulp.task('js', () =>
     output: {
       filename: 'bundle.js'
     },
-    plugins: [
-      new webpack.webpack.ProvidePlugin({
-        fetch: 'imports?this=>global!exports?global.fetch!whatwg-fetch'
-      })
-    ]
+    plugins
   }))
   .pipe(gulp.dest('dist')));
 
