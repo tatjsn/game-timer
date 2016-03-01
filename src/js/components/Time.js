@@ -6,7 +6,7 @@ const normalizeTime = num => {
 
 export default ({ time }) => (
   <div>
-    <p>
+    <p className="display-2 text-xs-center">
       {normalizeTime(Math.floor(time / 60))}:{normalizeTime(time % 60)}
     </p>
   </div>
