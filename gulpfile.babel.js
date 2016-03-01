@@ -9,11 +9,16 @@ const plugins = [
 ];
 
 if (process.env.NODE_ENV === 'production') {
-  plugins.push(new webpack.webpack.optimize.UglifyJsPlugin({
-    compress: {
-      warnings: false
-    }
-  }));
+  plugins.push(
+    new webpack.webpack.DefinePlugin({
+      'process.env.NODE_ENV': '"production"'
+    }),
+    new webpack.webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false
+      }
+    })
+  );
 }
 
 gulp.task('js', () =>
