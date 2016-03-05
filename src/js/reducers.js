@@ -4,6 +4,7 @@ import {
   TIME_DECREASE,
   GAME_RESUME,
   GAME_PAUSE,
+  GAME_OVER,
   SOUNDS_READY
 } from './actions';
 
@@ -22,6 +23,8 @@ const isTimeSet = (state = false, { type }) =>  {
   switch (type) {
     case TIME_INITIALIZE:
       return true;
+    case GAME_OVER:
+      return false;
     default:
       return state;
   }

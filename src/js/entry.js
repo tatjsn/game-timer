@@ -5,7 +5,7 @@ import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import { Provider } from 'react-redux';
 import reducers from './reducers';
-import { timeDecrease, timeInitalize, gameResume, gamePause, soundsReady } from './actions';
+import { timeDecrease, timeInitalize, gameResume, gamePause, gameOver, soundsReady } from './actions';
 import { connect } from 'react-redux';
 import App from './components/App';
 
@@ -64,10 +64,13 @@ store.subscribe(() => {
   ({ isRunning, time } = store.getState());
 
   if (time !== prevTime && time === 0 && isRunning) {
-    // Time over
+    // Game over
     clearInterval(intervalId);
     store.dispatch(gamePause());
     playChing(10 * 1000);
+    setTimeout(() => {
+      store.dispatch(gameOver());
+    }, 10 * 1000);
     return;
   }
 
