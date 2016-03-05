@@ -5,11 +5,9 @@ import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import { Provider } from 'react-redux';
 import reducers from './reducers';
-import { timeDecrease, timeInitalize, gameBegin, gameEnd, timeoutBegin, timeoutEnd, soundsReady } from './actions';
-import Time from './components/Time';
-import Input from './components/Input';
-import ControlPanel from './components/ControlPanel';
+import { timeDecrease, timeInitalize, gameResume, gamePause, soundsReady } from './actions';
 import { connect } from 'react-redux';
+import App from './components/App';
 
 const createStoreWithMiddleware = applyMiddleware(
   thunkMiddleware // lets us dispatch() from actions
@@ -58,22 +56,24 @@ const playChing = duration => {
   }
 }
 
-let { inGame, inTimeout, time } = store.getState();
+let { isRunning, time } = store.getState();
 let intervalId;
 store.subscribe(() => {
-  let prevInGame = inGame;
-  let prevInTimeout = inTimeout;
+  let prevIsRunning = isRunning;
   let prevTime = time;
-  ({ inGame, inTimeout, time } = store.getState());
-  if (time !== prevTime && time === 0 && inGame && !inTimeout) {
+  ({ isRunning, time } = store.getState());
+
+  if (time !== prevTime && time === 0 && isRunning) {
+    // Time over
     clearInterval(intervalId);
-    store.dispatch(gameEnd());
+    store.dispatch(gamePause());
     playChing(10 * 1000);
     return;
   }
 
-  if (inTimeout !== prevInTimeout && radio) {
-    if (inTimeout) {
+  if (isRunning !== prevIsRunning && time > 0) {
+    // Start/stop pause sound
+    if (!isRunning) {
       radioSource = createSource(radio);
       radioSource.start(0);
     } else if (radioSource) {
@@ -82,8 +82,8 @@ store.subscribe(() => {
     }
   }
 
-  if (inGame !== prevInGame || inTimeout !== prevInTimeout) {
-    if (inGame && !inTimeout && intervalId === undefined) {
+  if (isRunning !== prevIsRunning) {
+    if (isRunning && intervalId === undefined) {
       playChing(2 * 1000);
       intervalId = setInterval(() => {
         store.dispatch(timeDecrease(1))
@@ -95,20 +95,16 @@ store.subscribe(() => {
   }
 });
 
-const VisibleInput = connect(({ inGame }) => ({ inGame }))(Input);
-const VisibleTime = connect(({ time }) => ({ time }))(Time);
-const VisibleControlPanel = connect(({ inGame, inTimeout, isReady }) => ({ inGame, inTimeout, isReady }))(ControlPanel);
+const appParams = {
+  onTimeSet: value => store.dispatch(timeInitalize(value)),
+  onResume: () => store.dispatch(gameResume()),
+  onPause: () => store.dispatch(gamePause())
+};
+
+const VisibleApp = connect(({ isTimeSet }) => ({ isTimeSet}))(App);
 
 render((
   <Provider store={store}>
-    <div>
-      <VisibleTime />
-      <VisibleInput onChange={event => store.dispatch(timeInitalize(event.target.value))} />
-      <VisibleControlPanel
-        onBegin={event => store.dispatch(gameBegin(store.getState().gameTime))}
-        onEnd={event => store.dispatch(gameEnd())}
-        onPause={event => store.dispatch(timeoutBegin())}
-        onResume={event => store.dispatch(timeoutEnd())} />
-    </div>
+    <VisibleApp {...appParams} />
   </Provider>
 ), document.getElementById('app'))

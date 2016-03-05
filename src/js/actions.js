@@ -1,9 +1,7 @@
 export const TIME_INITIALIZE = 'TIME_INITIALIZE';
 export const TIME_DECREASE = 'TIME_DECREASE';
-export const GAME_BEGIN = 'GAME_BEGIN';
-export const GAME_END = 'GAME_END';
-export const TIMEOUT_BEGIN = 'TIMEOUT_BEGIN';
-export const TIMEOUT_END = 'TIMEOUT_END';
+export const GAME_RESUME = 'GAME_RESUME';
+export const GAME_PAUSE = 'GAME_PAUSE';
 export const SOUNDS_READY = 'SOUNDS_READY';
 
 const parseDec = value => +value;
@@ -32,8 +30,6 @@ const valueToTime = value => {
 
 export const timeInitalize = value => ({ type: TIME_INITIALIZE, payload: valueToTime(value) });
 export const timeDecrease = value => ({ type: TIME_DECREASE, payload: value });
-export const gameBegin = value => ({ type: GAME_BEGIN, payload: value });
-export const gameEnd = () => ({ type: GAME_END });
-export const timeoutBegin = () => ({ type: TIMEOUT_BEGIN });
-export const timeoutEnd = () => ({ type: TIMEOUT_END });
+export const gameResume = () => ({ type: GAME_RESUME });
+export const gamePause = () => ({ type: GAME_PAUSE });
 export const soundsReady = () => ({ type: SOUNDS_READY });

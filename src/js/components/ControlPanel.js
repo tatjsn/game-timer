@@ -1,10 +1,10 @@
 import React from 'react';
 
-export default ({ onBegin, onEnd, onPause, onResume, inGame, inTimeout, isReady }) => (
-  <div>
-    <button type="button" className="btn btn-primary btn-lg btn-block" onClick={onBegin} disabled={inGame || !isReady}>はじめ</button>
-    <button type="button" className="btn btn-secondary btn-lg btn-block" onClick={onEnd} disabled={!inGame}>おわり</button>
-    <button type="button" className="btn btn-warning btn-lg btn-block" onClick={onPause} disabled={!inGame || inTimeout}>まった！</button>
-    <button type="button" className="btn btn-secondary btn-lg btn-block" onClick={onResume} disabled={!inGame || !inTimeout}>さいかい</button>
+export default ({ onPause, onResume, isRunning, isReady }) => (
+  <div className="m-t-3">
+    { isRunning ?
+    <button type="button" className="btn btn-danger btn-lg btn-block p-y-3" onClick={onPause} disabled={!isReady}>まった！</button> :
+    <button type="button" className="btn btn-primary btn-lg btn-block p-y-3" onClick={onResume} disabled={!isReady}>さいかい</button>
+    }
   </div>
 )
